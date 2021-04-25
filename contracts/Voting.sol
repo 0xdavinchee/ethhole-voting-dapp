@@ -67,6 +67,10 @@ contract Voting {
     return (data.voteCount, data.name);
   }
 
+  function getElectionsCount() public view returns(uint arrayCount) {
+    return elections.length;
+  }
+
   function getResults(uint _electionId) public view returns(address[] memory, uint) {
     Election storage election = elections[_electionId];
     return (election.candidates, election.votingEndPeriod);
