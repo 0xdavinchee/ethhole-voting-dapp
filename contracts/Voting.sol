@@ -67,7 +67,7 @@ contract Voting {
     return (data.voteCount, data.name);
   }
 
-  function getElectionsCount() public view returns(uint arrayCount) {
+  function getElectionsCount() public view returns(uint) {
     return elections.length;
   }
 
