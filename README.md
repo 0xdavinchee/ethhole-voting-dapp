@@ -13,3 +13,6 @@ Assumptions:
 - Voters can only vote in one election.
 - Registration Starts immediately after an election is created.
 - Voting starts immediately following the registration period.
+
+Lessons Learned:
+- Your MetaMask must be connected to the correct network (localhost) during development otherwise you will keep getting an error when you try to call functions.
