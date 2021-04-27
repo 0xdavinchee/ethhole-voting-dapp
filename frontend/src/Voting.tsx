@@ -1,26 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
-import { VotingContext } from "./hardhat/SymfoniContext";
 import DateTime from "react-datetime";
 import moment from "moment";
 
 interface Props {}
 
 const Voting: React.FC<Props> = () => {
-  const voting = useContext(VotingContext);
   const [registrationEnd, setRegistrationEnd] = useState(new Date());
   const [votingEnd, setVotingEnd] = useState(new Date());
-
-  useEffect(() => {
-    (async () => {
-      if (!voting.instance) return;
-      try {
-        const elections = await voting.instance.getElectionsCount();
-        console.log("num elections", elections.toNumber());
-      } catch (ex) {
-        console.error(ex);
-      }
-    })();
-  }, [voting]);
 
   const convertDate = (date: moment.Moment) => {
     return date.toDate().getTime();

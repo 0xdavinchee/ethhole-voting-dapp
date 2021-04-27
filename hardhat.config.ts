@@ -2,10 +2,6 @@ import { task, HardhatUserConfig } from "hardhat/config";
 import { config as dotEnvConfig } from "dotenv";
 dotEnvConfig(); 
 import "@nomiclabs/hardhat-waffle";
-import "@nomiclabs/hardhat-ethers";
-import "hardhat-deploy-ethers";
-import "hardhat-deploy";
-import "@symfoni/hardhat-react";
 import "@typechain/hardhat";
 
 // TODO: include hardhat coverage and contract verification too.
