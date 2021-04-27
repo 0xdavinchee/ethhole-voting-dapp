@@ -28,7 +28,13 @@ task("accounts", "Prints the list of accounts", async (_args, hre) => {
  */
 const config: HardhatUserConfig = {
   solidity: "0.7.3",
+  paths: {
+    artifacts: "./frontend/src/artifacts"
+  },
   networks: {
+    hardhat: {
+      chainId: 1337
+    },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [RINKEBY_PRIVATE_KEY]

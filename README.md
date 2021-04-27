@@ -18,3 +18,4 @@ Lessons Learned:
 - Utilize `keccak256(abi.encodePacked(string))` for string comparison.
 - In order for @symfoni/hardhat-react to work, you need to create a deploy script so that hardhat-deploy is run.
 - Your MetaMask must be connected to the correct network (localhost) during development otherwise you will keep getting an error when you try to call functions.
+- You need to set hardhat network chainId to 1337 when using MetaMask with Hardhat Network: https://hardhat.org/metamask-issue.html.
