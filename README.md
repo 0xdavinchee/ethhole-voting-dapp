@@ -19,3 +19,8 @@ Lessons Learned:
 - Your MetaMask must be connected to the correct network (localhost) during development otherwise you will keep getting an error when you try to call functions.
 - You need to set hardhat network chainId to 1337 when using MetaMask with Hardhat Network: https://hardhat.org/metamask-issue.html.
 - To deploy to the local hardhat network, you must first run `npx hardhat node` to start a local node, then run your deploy script with the `--network localhost` option.
+
+Further Questions:
+- What is the best way for getting data from a contract, specifically an array of structs on the client side?
+- How do you create tests for functions based on time?
+- Is there a better way to structure the data?
