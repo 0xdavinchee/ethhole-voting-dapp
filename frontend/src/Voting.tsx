@@ -75,7 +75,10 @@ const Voting: React.FC<Props> = () => {
     }
     try {
       await requestAccount();
+      // this creates the actual transacation sent to the blockchain
       const txn = await votingContract.startElection(registrationTime, votingTime);
+
+      // this is called to wait for the txn to finish
       await txn.wait();
       await fetchAndSetElections();
     } catch (err) {
@@ -93,6 +96,7 @@ const Voting: React.FC<Props> = () => {
     <div>
       <h1>Elections</h1>
       <p># Elections: {numElections}</p>
+      <h2>Start an election!</h2>
       <label>Registration End Date/Time</label>
       <DateTime
         value={registrationEnd}

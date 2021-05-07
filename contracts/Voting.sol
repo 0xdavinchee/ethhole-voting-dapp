@@ -24,6 +24,8 @@ contract Voting {
   uint numElections;
   bool public locked;
 
+  event StartElection(uint _index, uint _registrationEndPeriod, uint _votingEndPeriod);
+
   modifier noReentrancy() {
     require(!locked, "No reentrancy");
 
@@ -40,6 +42,7 @@ contract Voting {
     require(_registrationEndPeriod >= block.timestamp && _votingEndPeriod >= _registrationEndPeriod);
     address[] memory candidates;
     elections.push(Election(_registrationEndPeriod, _votingEndPeriod, candidates));
+    emit StartElection(elections.length, _registrationEndPeriod, _votingEndPeriod);
   }
 
   function registerCandidate(uint _electionId, string memory _name) public {
