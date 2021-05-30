@@ -1,21 +1,35 @@
-import { expect } from "chai";
-import { ethers } from "hardhat";
+import { expect } from "./chai-setup";
+import {
+  deployments,
+  ethers,
+  getNamedAccounts,
+  getUnnamedAccounts,
+} from "hardhat";
 
 import { Voting } from "../typechain/Voting";
+import { setupUser, setupUsers } from "./utils";
 
-console.log("Hello");
+const setup = async () => {
+  await deployments.fixture("Voting");
+  const contracts = {
+    Voting: (await ethers.getContract("Voting")) as Voting,
+  };
 
-describe("Voting", function() {
-  let voting: Voting;
+  const { deployer } = await getNamedAccounts();
+  const participants = await getUnnamedAccounts();
 
-  beforeEach(async () => {
-    const Voting = await ethers.getContractFactory("Voting");
-    voting = (await Voting.deploy()) as Voting;
-    await voting.deployed();
-  })
+  return {
+    deployer: await setupUser(deployer, contracts),
+    participants: await setupUsers(participants, contracts),
+    ...contracts,
+  };
+};
 
-  it("Should work", async () => {
-    expect(await voting["getElectionsCount()"]()).to.equal(0);
-
+describe("Voting", () => {
+  describe("Initialization", () => {
+    it("Should initialize properly", async () => {
+      const { Voting } = await setup();
+      expect(await Voting.getElectionsCount()).to.be.equal(0);
+    });
   });
 });
