@@ -4,35 +4,36 @@ pragma solidity ^0.7.0;
 import "hardhat/console.sol";
 
 contract Voting {
-    struct Election {
-        uint256 registrationEndPeriod;
-        uint256 votingEndPeriod;
-        address[] candidates;
-    }
-
-    struct CandidateData {
+    struct Candidate {
+        address candidateAddress;
         uint256 voteCount;
-        uint256 electionId;
         string name;
     }
+    struct Voter {
+        bool voted;
+        uint256 candidateIndex;
+    }
 
-    mapping(address => CandidateData) candidateToCandidateDataMap;
-    mapping(address => bool) voters;
-
-    Election[] public elections;
-    uint256 numElections;
+    uint256 public electionId;
+    uint256 public registrationEndPeriod;
+    uint256 public votingEndPeriod;
     bool public locked;
 
+    Candidate[] public candidates;
+    mapping(address => bool) public registeredCandidates;
+    mapping(address => Voter) public voters;
+
     event StartElection(
-        uint256 indexed _index,
+        uint256 indexed _electionId,
         uint256 _registrationEndPeriod,
         uint256 _votingEndPeriod
     );
 
+    event RegisterCandidate(string _name);
+
     event VoteForCandidate(
-      address indexed _candidateAddress,
-      uint256 indexed _voteCount,
-      address indexed _voter
+        uint256 indexed _candidateAddress,
+        uint256 _voteCount
     );
 
     modifier noReentrancy() {
@@ -46,85 +47,99 @@ contract Voting {
     function startElection(
         uint256 _registrationEndPeriod,
         uint256 _votingEndPeriod
-    ) public {
+    ) external {
         require(
             _registrationEndPeriod >= block.timestamp &&
-                _votingEndPeriod >= _registrationEndPeriod
+                _votingEndPeriod >= _registrationEndPeriod,
+            "Registration end period must be > voting end period > registration end period."
         );
-        address[] memory candidates;
-        elections.push(
-            Election(_registrationEndPeriod, _votingEndPeriod, candidates)
+        bool hasElectionEnded =
+            (registrationEndPeriod == 0 && votingEndPeriod == 0) ||
+                block.timestamp > votingEndPeriod;
+        require(
+            hasElectionEnded,
+            "There is an active election currently, please wait until it is over."
         );
-        emit StartElection(
-            elections.length,
-            _registrationEndPeriod,
-            _votingEndPeriod
-        );
+        if (registrationEndPeriod != 0 || votingEndPeriod != 0) {
+            electionId++;
+        }
+        registrationEndPeriod = _registrationEndPeriod;
+        votingEndPeriod = _votingEndPeriod;
+
+        emit StartElection(electionId, _registrationEndPeriod, _votingEndPeriod);
     }
 
-    function registerCandidate(uint256 _electionId, string memory _name)
-        public
-    {
+    function registerCandidate(string memory _name) external {
+        require(
+            registrationEndPeriod != 0,
+            "There are no elections currently."
+        );
         require(
             getKeccak(_name) != getKeccak(""),
             "Please register with a name."
         );
         require(
-            block.timestamp < elections[_electionId].registrationEndPeriod,
+            block.timestamp < registrationEndPeriod,
             "The registration period has ended."
         );
         require(
-            getKeccak(candidateToCandidateDataMap[msg.sender].name) ==
-                getKeccak(""),
+            registeredCandidates[msg.sender] == false,
             "You have already registered for an election."
         );
-        elections[_electionId].candidates.push(msg.sender);
-        candidateToCandidateDataMap[msg.sender] = CandidateData(
-            0,
-            _electionId,
-            _name
-        );
+        registeredCandidates[msg.sender] = true;
+        candidates.push(Candidate(msg.sender, 0, _name));
+
+        emit RegisterCandidate(_name);
     }
 
-    function voteForCandidate(uint256 _electionId, address _candidateId)
-        public
-        noReentrancy
-    {
-        require(!voters[msg.sender], "You have already voted for a candidate.");
+    function voteForCandidate(uint256 _candidateId) external noReentrancy {
         require(
-            getKeccak(candidateToCandidateDataMap[_candidateId].name) !=
-                getKeccak(""),
-            "This address does not belong to a candidate."
+            !voters[msg.sender].voted,
+            "You have already voted for a candidate."
         );
+        require(candidates.length >= _candidateId + 1, "This candidate doesn't exist.");
         require(
-            block.timestamp > elections[_electionId].registrationEndPeriod &&
-                block.timestamp < elections[_electionId].votingEndPeriod,
+            block.timestamp > registrationEndPeriod &&
+                block.timestamp < votingEndPeriod,
             "Voting is not allowed now."
         );
-        candidateToCandidateDataMap[_candidateId].voteCount++;
-        voters[msg.sender] = true;
+        candidates[_candidateId].voteCount++;
+        voters[msg.sender].voted = true;
+        voters[msg.sender].candidateIndex = _candidateId;
+
+        emit VoteForCandidate(_candidateId, candidates[_candidateId].voteCount);
     }
 
-    function getCandidateData(address _candidateId)
+    function getLiveResults() public view returns(address[] memory, uint256[] memory) {
+        address[] memory addresses = new address[](candidates.length);
+        uint256[] memory voteCounts = new uint256[](candidates.length);
+        
+        for (uint256 i = 0; i < candidates.length; i++) {
+            addresses[i] = candidates[i].candidateAddress;
+            voteCounts[i] = candidates[i].voteCount;
+        }
+        return (addresses, voteCounts);
+    }
+
+    function getWinnerResults()
         public
         view
-        returns (uint256, string memory)
+        returns (uint256 _winningCandidate, bool isOver)
     {
-        CandidateData storage data = candidateToCandidateDataMap[_candidateId];
-        return (data.voteCount, data.name);
+        uint256 winningCount = 0;
+        isOver = block.timestamp > votingEndPeriod;
+
+        for (uint256 i = 0; i < candidates.length; i++) {
+            if (candidates[i].voteCount > winningCount) {
+                winningCount = candidates[i].voteCount;
+                _winningCandidate = i;
+            }
+        }
     }
 
-    function getElectionsCount() public view returns (uint256) {
-        return elections.length;
-    }
-
-    function getResults(uint256 _electionId)
-        public
-        view
-        returns (address[] memory, uint256)
-    {
-        Election storage election = elections[_electionId];
-        return (election.candidates, election.votingEndPeriod);
+    function winnerName() external view returns (string memory _name) {
+        (uint256 winningCandidate, ) = getWinnerResults();
+        return candidates[winningCandidate].name;
     }
 
     function getKeccak(string memory _string) private pure returns (bytes32) {

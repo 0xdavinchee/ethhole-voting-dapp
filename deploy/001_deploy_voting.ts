@@ -14,4 +14,4 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 }
 
 export default func;
-func.tags = ["Voting"]
+func.tags = ["Voting"];
