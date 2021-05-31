@@ -23,20 +23,25 @@ contract Voting {
     mapping(address => mapping(uint256 => Voter)) public voters;
 
     event StartElection(
-        uint256 indexed _electionId,
-        uint256 _registrationEndPeriod,
-        uint256 _votingEndPeriod
+        uint256 indexed electionId,
+        uint256 registrationEndPeriod,
+        uint256 votingEndPeriod
     );
     event ArchivePastElection(
-        uint256 indexed _electionId,
-        string _winnerName,
-        uint256 _voteCount,
-        address _winnerAddress
+        uint256 indexed electionId,
+        string winnerName,
+        uint256 voteCount,
+        address winnerAddress
     );
-    event RegisterCandidate(string _name);
+    event RegisterCandidate(
+        uint256 indexed electionId,
+        uint256 candidateId,
+        string name
+    );
     event VoteForCandidate(
-        uint256 indexed _candidateAddress,
-        uint256 _voteCount
+        uint256 indexed electionId,
+        uint256 indexed candidateAddress,
+        uint256 voteCount
     );
 
     constructor() {
@@ -121,7 +126,7 @@ contract Voting {
         registeredCandidates[msg.sender][electionId] = true;
         candidates.push(Candidate(msg.sender, 0, _name));
 
-        emit RegisterCandidate(_name);
+        emit RegisterCandidate(electionId, candidates.length - 1, _name);
     }
 
     /**
@@ -146,7 +151,7 @@ contract Voting {
         voters[msg.sender][electionId].voted = true;
         voters[msg.sender][electionId].candidateIndex = _candidateId;
 
-        emit VoteForCandidate(_candidateId, candidates[_candidateId].voteCount);
+        emit VoteForCandidate(electionId, _candidateId, candidates[_candidateId].voteCount);
     }
 
     /**
@@ -156,7 +161,11 @@ contract Voting {
     function getLiveResults()
         external
         view
-        returns (address[] memory, uint256[] memory, uint256)
+        returns (
+            address[] memory,
+            uint256[] memory,
+            uint256
+        )
     {
         address[] memory addresses = new address[](candidates.length);
         uint256[] memory voteCounts = new uint256[](candidates.length);

@@ -5,7 +5,6 @@ import { config as dotEnvConfig } from "dotenv";
 dotEnvConfig();
 import "hardhat-typechain";
 import "hardhat-prettier";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 // TODO: include hardhat coverage and contract verification too.
 

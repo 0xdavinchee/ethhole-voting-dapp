@@ -61,7 +61,7 @@ const increaseBlockTime = async (time: number) => {
   await hre.network.provider.send("evm_increaseTime", [time]);
 };
 
-describe("Voting", () => {
+describe("Voting Contract Tests", () => {
   describe("Initialization", () => {
     it("Should properly initialize with empty storage.", async () => {
       const { Voting } = await setup();
@@ -178,7 +178,7 @@ describe("Voting", () => {
 
       await expect(registerCandidateTxn)
         .to.emit(Voting, "RegisterCandidate")
-        .withArgs(ELON_TUSK);
+        .withArgs(0, 0, ELON_TUSK);
     });
 
     it("Should allow arbitrary number of people to register.", async () => {
@@ -203,14 +203,14 @@ describe("Voting", () => {
       const { participants, Voting } = await setup(true, true, true);
 
       const voteTxn = participants[1].Voting.voteForCandidate(0);
-      await expect(voteTxn).to.emit(Voting, "VoteForCandidate").withArgs(0, 1);
+      await expect(voteTxn).to.emit(Voting, "VoteForCandidate").withArgs(0, 0, 1);
     });
 
     it("Should allow candidate to vote for themselves.", async () => {
       const { Voting } = await setup(true, true, true);
       const voteTxn = Voting.voteForCandidate(0);
 
-      await expect(voteTxn).to.emit(Voting, "VoteForCandidate").withArgs(0, 1);
+      await expect(voteTxn).to.emit(Voting, "VoteForCandidate").withArgs(0, 0, 1);
     });
 
     it("Should allow multiple votes from multiple participants.", async () => {
@@ -221,10 +221,10 @@ describe("Voting", () => {
 
       await expect(candidateOneVoteTxn)
         .to.emit(Voting, "VoteForCandidate")
-        .withArgs(1, 1);
+        .withArgs(0, 1, 1);
       await expect(candidateZeroVoteTxn)
         .to.emit(Voting, "VoteForCandidate")
-        .withArgs(0, 2);
+        .withArgs(0, 0, 2);
     });
 
     it("Should not allow multiple votes from single voter.", async () => {
