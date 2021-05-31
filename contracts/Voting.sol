@@ -1,8 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.7.0;
 
-import "hardhat/console.sol";
-
 contract Voting {
     struct Candidate {
         address candidateAddress;
@@ -20,17 +18,21 @@ contract Voting {
     bool public locked;
 
     Candidate[] public candidates;
-    mapping(address => bool) public registeredCandidates;
-    mapping(address => Voter) public voters;
+    mapping(address => mapping(uint256 => bool)) public registeredCandidates;
+    mapping(address => mapping(uint256 => Voter)) public voters;
 
     event StartElection(
         uint256 indexed _electionId,
         uint256 _registrationEndPeriod,
         uint256 _votingEndPeriod
     );
-
+    event ArchivePastElection(
+        uint256 indexed _electionId,
+        string _winnerName,
+        uint256 _voteCount,
+        address _winnerAddress
+    );
     event RegisterCandidate(string _name);
-
     event VoteForCandidate(
         uint256 indexed _candidateAddress,
         uint256 _voteCount
@@ -44,6 +46,11 @@ contract Voting {
         locked = false;
     }
 
+    /**
+     * @dev startElection start a new election passing in a _registrationEndPeriod
+     * and a _votingEndPeriod. This also allows starting a new election if the
+     * conditions allow it.
+     */
     function startElection(
         uint256 _registrationEndPeriod,
         uint256 _votingEndPeriod
@@ -60,15 +67,35 @@ contract Voting {
             hasElectionEnded,
             "There is an active election currently, please wait until it is over."
         );
+
+        // start a new election
         if (registrationEndPeriod != 0 || votingEndPeriod != 0) {
+            (string name, uint256 voteCount, address winnerAddress) =
+                winningCandidateDetails();
+            emit ArchivePastElection(
+                electionId,
+                name,
+                voteCount,
+                winnerAddress
+            );
+            delete candidates;
             electionId++;
         }
+
         registrationEndPeriod = _registrationEndPeriod;
         votingEndPeriod = _votingEndPeriod;
 
-        emit StartElection(electionId, _registrationEndPeriod, _votingEndPeriod);
+        emit StartElection(
+            electionId,
+            _registrationEndPeriod,
+            _votingEndPeriod
+        );
     }
 
+    /**
+     * @dev registerCandidate allows anyone to sign up as a candidate in an
+     * active election.
+     */
     function registerCandidate(string memory _name) external {
         require(
             registrationEndPeriod != 0,
@@ -83,44 +110,63 @@ contract Voting {
             "The registration period has ended."
         );
         require(
-            registeredCandidates[msg.sender] == false,
+            registeredCandidates[msg.sender][electionId] == false,
             "You have already registered for an election."
         );
-        registeredCandidates[msg.sender] = true;
+        registeredCandidates[msg.sender][electionId] = true;
         candidates.push(Candidate(msg.sender, 0, _name));
 
         emit RegisterCandidate(_name);
     }
 
+    /**
+     * @dev voteForCandidate allows anyone to vote for a candidate in the current
+     * active election.
+     */
     function voteForCandidate(uint256 _candidateId) external noReentrancy {
         require(
-            !voters[msg.sender].voted,
+            !voters[msg.sender][electionId].voted,
             "You have already voted for a candidate."
         );
-        require(candidates.length >= _candidateId + 1, "This candidate doesn't exist.");
+        require(
+            candidates.length >= _candidateId + 1,
+            "This candidate doesn't exist."
+        );
         require(
             block.timestamp > registrationEndPeriod &&
                 block.timestamp < votingEndPeriod,
             "Voting is not allowed now."
         );
         candidates[_candidateId].voteCount++;
-        voters[msg.sender].voted = true;
-        voters[msg.sender].candidateIndex = _candidateId;
+        voters[msg.sender][electionId].voted = true;
+        voters[msg.sender][electionId].candidateIndex = _candidateId;
 
         emit VoteForCandidate(_candidateId, candidates[_candidateId].voteCount);
     }
 
-    function getLiveResults() public view returns(address[] memory, uint256[] memory) {
+    /**
+     * @dev getLiveResults a view function to see the current results
+     * active election.
+     */
+    function getLiveResults()
+        external
+        view
+        returns (address[] memory, uint256[] memory)
+    {
         address[] memory addresses = new address[](candidates.length);
         uint256[] memory voteCounts = new uint256[](candidates.length);
-        
+
         for (uint256 i = 0; i < candidates.length; i++) {
             addresses[i] = candidates[i].candidateAddress;
             voteCounts[i] = candidates[i].voteCount;
         }
-        return (addresses, voteCounts);
+        return (addresses, voteCounts, votingEndPeriod);
     }
 
+    /**
+     * @dev getWinnerResults a view function to see who the winner of the
+     * active election is.
+     */
     function getWinnerResults()
         public
         view
@@ -137,9 +183,25 @@ contract Voting {
         }
     }
 
-    function winnerName() external view returns (string memory _name) {
+    /**
+     * @dev winningCandidateDetails an internal view function to get the details of the
+     * winning candidate.
+     */
+    function winningCandidateDetails()
+        internal
+        view
+        returns (
+            string memory _name,
+            uint256 _voteCount,
+            address _address
+        )
+    {
         (uint256 winningCandidate, ) = getWinnerResults();
-        return candidates[winningCandidate].name;
+        return (
+            candidates[winningCandidate].name,
+            candidates[winningCandidate].voteCount,
+            candidates[winningCandidate].candidateAddress
+        );
     }
 
     function getKeccak(string memory _string) private pure returns (bytes32) {

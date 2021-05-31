@@ -186,14 +186,14 @@ describe("Voting", () => {
       Voting.registerCandidate(ELON_TUSK);
       await participants[0].Voting.registerCandidate(JEFF_BEEZOS);
 
-      expect(await Voting.registeredCandidates(deployer.address)).to.equal(
+      expect(await Voting.registeredCandidates(deployer.address, 0)).to.equal(
         true
       );
       expect(
-        await Voting.registeredCandidates(participants[0].address)
+        await Voting.registeredCandidates(participants[0].address, 0)
       ).to.equal(true);
       expect(
-        await Voting.registeredCandidates(participants[1].address)
+        await Voting.registeredCandidates(participants[1].address, 0)
       ).to.equal(false);
     });
   });
