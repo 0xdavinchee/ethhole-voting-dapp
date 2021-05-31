@@ -26,6 +26,7 @@ Lessons Learned:
 - To deploy to the local hardhat network, you must first run `npx hardhat node` to start a local node, then run your deploy script with the `--network localhost` option.
 - When working with time between the client (JS) and Solidity, it is important to remember that using `new Date().getTime()` returns the value in milliseconds whereas `block.timestamp` refers to time in **seconds** since unix epoch (January 1, 1970 UTC, an arbitrary date).
 - When you use `hre.network.provider.send("evm_increaseTime", [<TIME_IN_SECONDS>])` and attempt to use a view function in solidity afterwards, it won't recognize this increase and will not work.
+- How to send funds using `ethers.js`, look at `hardhat.config.ts`!
 
 Further Questions:
 

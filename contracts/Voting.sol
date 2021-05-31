@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: Unlicense
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.7.0;
 
 contract Voting {
@@ -16,6 +16,7 @@ contract Voting {
     uint256 public registrationEndPeriod;
     uint256 public votingEndPeriod;
     bool public locked;
+    address private owner;
 
     Candidate[] public candidates;
     mapping(address => mapping(uint256 => bool)) public registeredCandidates;
@@ -37,6 +38,10 @@ contract Voting {
         uint256 indexed _candidateAddress,
         uint256 _voteCount
     );
+
+    constructor() {
+        owner = msg.sender;
+    }
 
     modifier noReentrancy() {
         require(!locked, "No reentrancy");
@@ -70,7 +75,7 @@ contract Voting {
 
         // start a new election
         if (registrationEndPeriod != 0 || votingEndPeriod != 0) {
-            (string name, uint256 voteCount, address winnerAddress) =
+            (string memory name, uint256 voteCount, address winnerAddress) =
                 winningCandidateDetails();
             emit ArchivePastElection(
                 electionId,
@@ -151,7 +156,7 @@ contract Voting {
     function getLiveResults()
         external
         view
-        returns (address[] memory, uint256[] memory)
+        returns (address[] memory, uint256[] memory, uint256)
     {
         address[] memory addresses = new address[](candidates.length);
         uint256[] memory voteCounts = new uint256[](candidates.length);
@@ -181,6 +186,11 @@ contract Voting {
                 _winningCandidate = i;
             }
         }
+    }
+
+    function destroyContract() public {
+        require(msg.sender == owner);
+        selfdestruct(msg.sender);
     }
 
     /**

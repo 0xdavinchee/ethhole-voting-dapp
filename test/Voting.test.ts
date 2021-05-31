@@ -299,15 +299,5 @@ describe("Voting", () => {
       expect(results[0].toNumber()).to.equal(1);
       expect(results[1]).to.equal(false);
     });
-
-    it("Should return the correct winner's name.", async () => {
-      const { participants, Voting } = await setup(true, true, true);
-      await Voting.voteForCandidate(0);
-      await participants[0].Voting.voteForCandidate(1);
-      await participants[1].Voting.voteForCandidate(1);
-
-      expect(await Voting.winnerName()).to.equal(JEFF_BEEZOS);
-
-    })
   });
 });
