@@ -280,19 +280,6 @@ describe("Voting Contract Tests", () => {
         .withArgs(1, registrationEndPeriod, votingEndPeriod);
     });
 
-    it("Should return the correct live election results.", async () => {
-      const { deployer, participants, Voting } = await setup(true, true, true);
-      await Voting.voteForCandidate(0);
-      await participants[0].Voting.voteForCandidate(1);
-      await participants[1].Voting.voteForCandidate(1);
-      const liveResults = await Voting.getLiveResults();
-
-      expect(liveResults[0][0]).to.equal(deployer.address);
-      expect(liveResults[1][0]).to.equal(1);
-      expect(liveResults[0][1]).to.equal(participants[0].address);
-      expect(liveResults[1][1]).to.equal(2);
-    });
-
     it("Should return the correct final election results.", async () => {
       const { participants, Voting } = await setup(true, true, true);
       await Voting.voteForCandidate(0);

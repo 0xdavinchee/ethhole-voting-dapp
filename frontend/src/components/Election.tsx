@@ -1,43 +1,65 @@
 import {
   Button,
-  Card,
   CardContent,
   Grid,
   Paper,
   TextField,
   Typography,
 } from "@material-ui/core";
-import makeBlockie from "ethereum-blockies-base64";
-import "./Election.css";
-import { IElection } from "../../../interface";
-import { useState } from "react";
+import { IElection } from "../../interface";
+import { useEffect, useState } from "react";
+import { initializeContract, requestAccount } from "../utils/helpers";
+import Candidate from "./Candidate";
+
+// - an active Election (registration period, voting perio)
+// - an inactive complete Election
+
+const getMs = (seconds: number) => seconds * 1000;
 
 interface IElectionProps {
   hasActiveElection: boolean;
   election: IElection;
 }
 
-const getMs = (seconds: number) => seconds * 1000;
-
 const Election = (props: IElectionProps) => {
   const [registerError, setRegisterError] = useState(false);
   const [name, setName] = useState("");
+  const [time, setTime] = useState(new Date());
   const formattedRegistrationEndDate = new Date(
-    Number(props.election.registrationEndPeriod)
+    Number(props.election.registrationEndPeriod) * 1000
   );
   const formattedVotingEndDate = new Date(
-    Number(props.election.votingEndPeriod)
+    Number(props.election.votingEndPeriod) * 1000
   );
-
   const isRegistrationOver =
-    new Date().getTime() > getMs(Number(props.election.registrationEndPeriod));
-  const isVotingOver =
-    new Date().getTime() > getMs(Number(props.election.votingEndPeriod));
+    time.getTime() > getMs(Number(props.election.registrationEndPeriod));
+  const isVotingAllowed =
+    time.getTime() < getMs(Number(props.election.votingEndPeriod)) &&
+    isRegistrationOver;
 
-  const registerCandidate = () => {
+  const totalVotes =
+    props.election.candidates.length === 0
+      ? 0
+      : props.election.candidates
+          .map((x) => Number(x.voteCount))
+          .reduce((a, b) => a + b, 0);
+
+  const registerCandidate = async () => {
     if (name.trim() === "") {
       setRegisterError(true);
       return;
+    }
+    const votingContract = initializeContract(true);
+    if (votingContract == null) {
+      return;
+    }
+    try {
+      await requestAccount();
+      const txn = await votingContract.registerCandidate(name);
+
+      await txn.wait();
+    } catch (err) {
+      console.error(err);
     }
   };
   const setNameHelper = (name: string) => {
@@ -46,16 +68,19 @@ const Election = (props: IElectionProps) => {
     }
     setName(name);
   };
-  const vote = (id: string) => {
-    console.log(id);
-  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  });
 
   return (
-    <Paper
-      elevation={3}
-      className="b-election-container"
-      key={props.election.id}
-    >
+    <Paper elevation={3} className="b-election-container">
       <CardContent>
         <Typography variant="h5">Current Election</Typography>
         <Grid container>
@@ -115,36 +140,16 @@ const Election = (props: IElectionProps) => {
             "There are no candidates in this election currently."}
           {props.election.candidates.length > 0 &&
             props.election.candidates.map((x) => (
-              <Card key={x.id} className="e-candidate-container">
-                <CardContent className="e-candidate">
-                  <img
-                    className="e-candidate-blockie"
-                    src={makeBlockie(x.address)}
-                    alt={x.address}
-                  />
-                  <div>
-                    <Typography variant="body2">
-                      Candidate Name: {x.name}
-                    </Typography>
-                    <Typography variant="body2">
-                      Votes: {x.voteCount}
-                    </Typography>
-                    <Typography variant="body2">
-                      Address: {x.address}
-                    </Typography>
-                  </div>
-                  <Button
-                    className="e-register-button"
-                    color="primary"
-                    variant="contained"
-                    onClick={() => vote(x.candidateId)}
-                  >
-                    Vote
-                  </Button>
-                </CardContent>
-              </Card>
+              <Candidate
+                candidate={x}
+                isVotingAllowed={isVotingAllowed}
+                totalVotes={totalVotes}
+              />
             ))}
         </div>
+        {!props.hasActiveElection && (
+          <Typography variant="body1">The election is over.</Typography>
+        )}
       </CardContent>
     </Paper>
   );

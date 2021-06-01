@@ -1,13 +1,71 @@
+/* General Styles*/
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+/* Override */
+.rdtPicker {
+  background-color: #424242 !important;
+}
+
+/* Election Styles */
+.b-election-container {
+  margin: 3rem 0;
+}
+.e-loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -20px;
+  margin-top: -20px;
+}
+.e-title {
+  margin: 3rem 0 !important;
+  text-align: center;
+}
+.e-start-election-container {
+  margin-top: 3rem;
+}
+.e-past-elections {
+  margin: 3rem 0 2rem 0;
+}
+
+/* Candidate Styles */
+.e-candidate-container {
+  margin-bottom: 15px;
+}
+.e-candidate {
+  display: flex;
+  justify-content: space-between;
+}
+.e-candidates-container {
+  margin: 2rem 0;
+}
+.e-candidate-blockie {
+  height: 50px;
+  margin-right: 15px;
+  align-self: center;
+}
+.e-candidate-info {
+  display: flex;
+}
+
+/* Register Candidate Styles */
+.e-register-form {
+  display: flex;
+  align-items: flex-end;
+  margin-top: 1rem;
+}
+.e-register-button {
+  margin-left: 1rem !important;
 }

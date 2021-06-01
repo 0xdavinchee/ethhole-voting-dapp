@@ -102,7 +102,10 @@ contract Voting {
         );
     }
 
-    function updateTime(uint256 _registrationEndPeriod, uint256 _votingEndPeriod) external {
+    function updateTime(
+        uint256 _registrationEndPeriod,
+        uint256 _votingEndPeriod
+    ) external {
         require(_registrationEndPeriod < _votingEndPeriod);
         registrationEndPeriod = _registrationEndPeriod;
         votingEndPeriod = _votingEndPeriod;
@@ -162,29 +165,6 @@ contract Voting {
             _candidateId,
             candidates[_candidateId].voteCount
         );
-    }
-
-    /**
-     * @dev getLiveResults a view function to see the current results
-     * active election.
-     */
-    function getLiveResults()
-        external
-        view
-        returns (
-            address[] memory,
-            uint256[] memory,
-            uint256
-        )
-    {
-        address[] memory addresses = new address[](candidates.length);
-        uint256[] memory voteCounts = new uint256[](candidates.length);
-
-        for (uint256 i = 0; i < candidates.length; i++) {
-            addresses[i] = candidates[i].candidateAddress;
-            voteCounts[i] = candidates[i].voteCount;
-        }
-        return (addresses, voteCounts, votingEndPeriod);
     }
 
     /**

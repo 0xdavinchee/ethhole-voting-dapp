@@ -1,4 +1,4 @@
-import Voting from "../Voting/Voting";
+import Voting from "./Voting";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import "@fontsource/roboto";
 import { ThemeProvider } from "@material-ui/styles";
@@ -8,7 +8,7 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import { blue } from "@material-ui/core/colors";
 
 const client = new ApolloClient({
-  uri: "https://api.thegraph.com/subgraphs/name/0xdavinchee/ethhole-voting-dapp",
+  uri: "http://localhost:8000/subgraphs/name/0xdavinchee/ethhole-voting-dapp",
   cache: new InMemoryCache(),
 });
 
