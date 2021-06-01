@@ -6,7 +6,7 @@ import hre, {
   getUnnamedAccounts,
 } from "hardhat";
 
-import { Voting } from "../typechain/Voting";
+import { Voting } from "../typechain";
 import { setupUser, setupUsers } from "./utils";
 
 const ELON_TUSK = "Elon Tusk";
@@ -203,14 +203,18 @@ describe("Voting Contract Tests", () => {
       const { participants, Voting } = await setup(true, true, true);
 
       const voteTxn = participants[1].Voting.voteForCandidate(0);
-      await expect(voteTxn).to.emit(Voting, "VoteForCandidate").withArgs(0, 0, 1);
+      await expect(voteTxn)
+        .to.emit(Voting, "VoteForCandidate")
+        .withArgs(0, 0, 1);
     });
 
     it("Should allow candidate to vote for themselves.", async () => {
       const { Voting } = await setup(true, true, true);
       const voteTxn = Voting.voteForCandidate(0);
 
-      await expect(voteTxn).to.emit(Voting, "VoteForCandidate").withArgs(0, 0, 1);
+      await expect(voteTxn)
+        .to.emit(Voting, "VoteForCandidate")
+        .withArgs(0, 0, 1);
     });
 
     it("Should allow multiple votes from multiple participants.", async () => {

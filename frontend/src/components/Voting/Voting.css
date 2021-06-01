@@ -1,0 +1,21 @@
+.b-election-container {
+  margin: 3rem 0;
+}
+
+.e-loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -20px;
+  margin-top: -20px;
+}
+.e-title {
+  text-align: center;
+}
+
+.rdtPicker {
+  background-color: #424242 !important;
+}
+.e-candidates-container {
+  margin: 2rem 0;
+}

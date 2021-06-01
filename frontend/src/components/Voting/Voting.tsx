@@ -1,20 +1,78 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@apollo/client";
-import { Button, Container, Typography } from "@material-ui/core";
+import {
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Container,
+  Grid,
+  Paper,
+  TextField,
+  Typography,
+} from "@material-ui/core";
 import { ethers } from "ethers";
-import DateTime from "react-datetime";
 import moment from "moment";
 import VotingABI from "../../artifacts/contracts/Voting.sol/Voting.json";
-import { Voting as VotingInterface } from "../../../../typechain/Voting";
+import { Voting as VotingInterface } from "../../../../typechain";
 import { GET_ELECTIONS } from "../../graphql/queries";
+import "./Voting.css";
+import { IElection } from "../../../interface";
 
 interface Props {}
 
+const Election = ({ election }: { election: IElection }) => {
+  const formattedRegistrationEndDate = new Date(
+    Number(election.registrationEndPeriod)
+  );
+  const formattedVotingEndDate = new Date(Number(election.votingEndPeriod));
+  return (
+    <Paper elevation={3} className="b-election-container" key={election.id}>
+      <CardContent>
+        <Typography variant="h5">Current Election</Typography>
+        <Grid container>
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6">Election Details</Typography>
+            <div>Election ID: {election.electionId}</div>
+            <div>
+              Registration End Time:{" "}
+              {formattedRegistrationEndDate.toDateString()}{" "}
+              {formattedRegistrationEndDate.toLocaleTimeString()}
+            </div>
+            <div>
+              Voting End Time: {formattedVotingEndDate.toDateString()}{" "}
+              {formattedVotingEndDate.toLocaleTimeString()}
+            </div>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6">Register as Candidate</Typography>
+            <div>Election ID: {election.electionId}</div>
+            <div>
+              Registration End Time:{" "}
+              {formattedRegistrationEndDate.toDateString()}{" "}
+              {formattedRegistrationEndDate.toLocaleTimeString()}
+            </div>
+            <div>
+              Voting End Time: {formattedVotingEndDate.toDateString()}{" "}
+              {formattedVotingEndDate.toLocaleTimeString()}
+            </div>
+          </Grid>
+        </Grid>
+
+        <div className="e-candidates-container">
+          <Typography variant="h6">Candidates</Typography>
+          {election.candidates.length > 0 &&
+            "There are no candidates in this election currently."}
+        </div>
+      </CardContent>
+    </Paper>
+  );
+};
+
 const Voting: React.FC<Props> = () => {
-  const [registrationEnd, setRegistrationEnd] = useState<
-    string | moment.Moment
-  >("");
-  const [votingEnd, setVotingEnd] = useState<string | moment.Moment>("");
+  const [registrationEnd, setRegistrationEnd] = useState("");
+  const [votingEnd, setVotingEnd] = useState("");
+  const [elections, setElections] = useState<IElection[]>([]);
 
   const contractAddress = "0x340632f0199C4f9C073f493bddd2873Db0B5806C";
 
@@ -22,10 +80,17 @@ const Voting: React.FC<Props> = () => {
 
   useEffect(() => {
     if (loading || data == null) return;
-
-
-    console.log(data.elections);
+    setElections(data.elections);
   }, [loading, data]);
+
+  const currentElection = useMemo(
+    () => (elections.length > 0 ? elections[elections.length - 1] : null),
+    [elections]
+  );
+
+  const hasActiveElection =
+    currentElection != null &&
+    new Date().getTime() < Number(currentElection.votingEndPeriod) * 1000;
 
   const isGlobalEthereumObjectEmpty = typeof (window as any).ethereum == null;
 
@@ -57,50 +122,85 @@ const Voting: React.FC<Props> = () => {
     return votingContract;
   }
 
-  // async function startElection() {
-  //   if (isGlobalEthereumObjectEmpty) return;
-  //   const currentTime = new Date().getTime();
-  //   const registrationTime = (registrationEnd as moment.Moment)
-  //     .toDate()
-  //     .getTime();
-  //   const votingTime = (votingEnd as moment.Moment).toDate().getTime();
-  //   const votingContract = initializeContract(true);
-  //   if (
-  //     currentTime > registrationTime ||
-  //     currentTime > votingTime ||
-  //     registrationTime > votingTime ||
-  //     votingContract == null
-  //   ) {
-  //     return;
-  //   }
-  //   try {
-  //     await requestAccount();
-  //     // this creates the actual transacation sent to the blockchain
-  //     const txn = await votingContract.startElection(registrationTime, votingTime);
+  async function startElection() {
+    if (isGlobalEthereumObjectEmpty) return;
+    const currentTime = new Date().getTime();
+    const registrationTime = new Date(registrationEnd).getTime();
+    const votingTime = new Date(votingEnd).getTime();
+    const votingContract = initializeContract(true);
+    if (
+      currentTime > registrationTime ||
+      currentTime > votingTime ||
+      registrationTime > votingTime ||
+      votingContract == null
+    ) {
+      return;
+    }
+    try {
+      await requestAccount();
+      // this creates the actual transacation sent to the blockchain
+      const txn = await votingContract.startElection(
+        registrationTime,
+        votingTime
+      );
 
-  //     // this is called to wait for the txn to finish
-  //     await txn.wait();
-  //     await fetchAndSetElections();
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }
+      // this is called to wait for the txn to finish
+      await txn.wait();
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   return (
-    <Container maxWidth="md">
-      <Typography variant="h1">Elections</Typography>
-      <h2>Start an election!</h2>
-      <label>Registration End Date/Time</label>
-      <DateTime
-        value={registrationEnd}
-        onChange={(e: string | moment.Moment) => setRegistrationEnd(e)}
-      />
-      <label>Voting End Date/Time</label>
-      <DateTime
-        value={votingEnd}
-        onChange={(e: string | moment.Moment) => setVotingEnd(e)}
-      />
-      <Button variant="contained" color="primary" onClick={() => {console.log("start election")}}>Start Election</Button>
+    <Container className="b-voting-container" maxWidth="md">
+      {loading && <CircularProgress className="e-loader" />}
+      {!loading && (
+        <>
+          <Typography variant="h4" className="e-title">
+            Voting dApp
+          </Typography>
+          {currentElection != null && <Election election={currentElection} />}
+
+          <Typography variant="h6">Start an election</Typography>
+          <Grid container spacing={10} className="e-start-election">
+            <Grid item>
+              <TextField
+                id="registration-datetime"
+                label="Registration End Date/Time"
+                type="datetime-local"
+                defaultValue=""
+                value={registrationEnd}
+                onChange={(e) => setRegistrationEnd(e.target.value)}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item>
+              <TextField
+                id="voting-datetime"
+                label="Voting End Date/Time"
+                type="datetime-local"
+                defaultValue=""
+                value={votingEnd}
+                onChange={(e) => setVotingEnd(e.target.value)}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => startElection()}
+              >
+                Start Election
+              </Button>
+            </Grid>
+          </Grid>
+        </>
+      )}
     </Container>
   );
 };
