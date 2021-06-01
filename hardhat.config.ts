@@ -5,8 +5,12 @@ import { config as dotEnvConfig } from "dotenv";
 dotEnvConfig();
 import "hardhat-typechain";
 import "hardhat-prettier";
+import Voting from "./frontend/src/artifacts/contracts/Voting.sol/Voting.json";
+import { Voting as VotingType } from "./typechain";
 
-// TODO: include hardhat coverage and contract verification too.
+const INFURA_API_KEY = process.env.INFURA_API_KEY || "";
+const RINKEBY_PRIVATE_KEY = process.env.RINKEBY_PRIVATE_KEY || "";
+const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || "";
 
 task("sendFunds", "send ether to an account, pass in pKey and amount")
   .addParam("key", "private key of your wallet", "")
@@ -21,8 +25,18 @@ task("sendFunds", "send ether to an account, pass in pKey and amount")
     });
   });
 
-const INFURA_API_KEY = process.env.INFURA_API_KEY || "";
-const RINKEBY_PRIVATE_KEY = process.env.RINKEBY_PRIVATE_KEY || "";
+  task("startElection", "start an election")
+  .addParam("registration", "registration end time", "")
+  .addParam("voting", "voting end time", "")
+  .setAction(async (args, hre) => {
+    const signers = await hre.ethers.getSigners();
+    const voting = await hre.ethers.getContractAt(Voting.abi, CONTRACT_ADDRESS, signers[0]) as VotingType;
+    const formattedRegistrationEnd = new Date(args.registration).getTime() / 1000;
+    const formattedVotingEnd = new Date(args.voting).getTime() / 1000;
+    const txn = await voting.startElection(formattedRegistrationEnd, formattedVotingEnd);
+    const receipt = await txn.wait();
+    console.log("Receipt: ", receipt);
+  });
 
 const config: HardhatUserConfig = {
   solidity: "0.7.3",
