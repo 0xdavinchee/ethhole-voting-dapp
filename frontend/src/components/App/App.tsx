@@ -1,11 +1,11 @@
 import Voting from "../Voting/Voting";
-import "react-datetime/css/react-datetime.css";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import "@fontsource/roboto";
 import { ThemeProvider } from "@material-ui/styles";
 import { useMemo } from "react";
 import { createMuiTheme, useMediaQuery } from "@material-ui/core";
 import CssBaseline from "@material-ui/core/CssBaseline";
+import { blue } from "@material-ui/core/colors";
 
 const client = new ApolloClient({
   uri: "https://api.thegraph.com/subgraphs/name/0xdavinchee/ethhole-voting-dapp",
@@ -18,7 +18,10 @@ function App() {
     () =>
       createMuiTheme({
         palette: {
-          type: "dark",
+          type: prefersDarkMode ? "dark" : "light",
+          primary: {
+            main: blue[200],
+          },
         },
       }),
     [prefersDarkMode]

@@ -10,6 +10,17 @@ export interface IElection {
 export interface ICandidate {
   __typename: "Candidate";
   id: string;
+  candidateId: string;
+  address: string;
   voteCount: string;
   name: string;
+}
+
+export interface IPastElection {
+  __typename: "PastElection";
+  id: string;
+  electionId: string;
+  winnerName: string;
+  voteCount: string;
+  winnerAddress: string;
 }

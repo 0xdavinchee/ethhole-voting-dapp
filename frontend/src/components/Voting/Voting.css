@@ -10,12 +10,10 @@
   margin-top: -20px;
 }
 .e-title {
+  margin-top: 3rem !important;
   text-align: center;
 }
 
 .rdtPicker {
   background-color: #424242 !important;
-}
-.e-candidates-container {
-  margin: 2rem 0;
 }

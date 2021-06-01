@@ -1,4 +1,4 @@
-import { ApolloClient, gql, InMemoryCache } from "@apollo/client";
+import { gql } from "@apollo/client";
 
 export const GET_ELECTIONS = gql`
   query GetActiveElections {
@@ -9,9 +9,23 @@ export const GET_ELECTIONS = gql`
       votingEndPeriod
       candidates {
         id
+        candidateId
+        address
         voteCount
         name
       }
+    }
+  }
+`;
+
+export const GET_PAST_ELECTIONS = gql`
+  query GetPastElections {
+    pastElections {
+      id
+      electionId
+      winnerName
+      voteCount
+      winnerAddress
     }
   }
 `;
