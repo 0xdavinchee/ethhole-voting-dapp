@@ -9,7 +9,9 @@ import {
 
 interface ICandidateProps {
   candidate: ICandidate;
+  isBeforeVotingEnd: boolean;
   isVotingAllowed: boolean;
+  isWinner: boolean;
   totalVotes: number;
 }
 const Candidate = (props: ICandidateProps) => {
@@ -32,8 +34,12 @@ const Candidate = (props: ICandidateProps) => {
     }
   };
 
+  const candidateContainerStyles =
+    "e-candidate-container" +
+    (props.isWinner && !props.isBeforeVotingEnd ? " e-winner" : "");
+
   return (
-    <Card key={candidate.id} className="e-candidate-container">
+    <Card key={candidate.id} className={candidateContainerStyles}>
       <CardContent className="e-candidate">
         <div className="e-candidate-info">
           <img
@@ -53,7 +59,13 @@ const Candidate = (props: ICandidateProps) => {
             </Typography>
             <Typography variant="body2">
               {candidate.voteCount} / {props.totalVotes} (
-              {(Number(candidate.voteCount) / props.totalVotes) * 100}%)
+              {props.totalVotes === 0
+                ? 0
+                : (
+                    (Number(candidate.voteCount) / props.totalVotes) *
+                    100
+                  ).toFixed(2)}
+              %)
             </Typography>
           </div>
         </div>

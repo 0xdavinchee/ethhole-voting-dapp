@@ -5,7 +5,8 @@ import { Voting as VotingInterface } from "../../../typechain";
 export const isGlobalEthereumObjectEmpty =
   typeof (window as any).ethereum == null;
 
-const contractAddress = "0x340632f0199C4f9C073f493bddd2873Db0B5806C";
+const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || "";
+
 export async function requestAccount() {
   const ethereum = (window as any).ethereum;
   if (isGlobalEthereumObjectEmpty) return;

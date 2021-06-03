@@ -6,7 +6,6 @@ import {
   AccordionSummary,
   Button,
   CardContent,
-  CircularProgress,
   Container,
   Grid,
   Paper,
@@ -25,24 +24,25 @@ import {
   requestAccount,
 } from "../utils/helpers";
 
-interface Props {}
+const getMs = (seconds: number) => seconds * 1000;
 
-const Voting: React.FC<Props> = () => {
+const Voting = () => {
   const [registrationEnd, setRegistrationEnd] = useState("");
   const [votingEnd, setVotingEnd] = useState("");
   const [elections, setElections] = useState<IElection[]>([]);
   const [pastElections, setPastElections] = useState<IPastElection[]>([]);
+  const [time, setTime] = useState(new Date());
 
   const {
     loading: loadingElections,
-    error: electionsError,
+    error: _electionsError,
     data: electionsData,
     refetch: refetchElections,
   } = useQuery(GET_ELECTIONS);
 
   const {
     loading: loadingPastElections,
-    error: pastElectionsError,
+    error: _pastElectionsError,
     data: pastElectionsData,
     refetch: refetchPastElections,
   } = useQuery(GET_PAST_ELECTIONS);
@@ -51,11 +51,16 @@ const Voting: React.FC<Props> = () => {
     () => (elections.length > 0 ? elections[elections.length - 1] : null),
     [elections]
   );
+  const isRegistrationOver =
+    currentElection == null
+      ? false
+      : time.getTime() > getMs(Number(currentElection.registrationEndPeriod));
+  const isBeforeVotingEnd =
+    currentElection == null
+      ? false
+      : time.getTime() < getMs(Number(currentElection.votingEndPeriod));
 
-  const hasActiveElection =
-    currentElection != null &&
-    new Date().getTime() < Number(currentElection.votingEndPeriod) * 1000;
-
+  const hasActiveElection = currentElection != null && isBeforeVotingEnd;
   async function startElection() {
     if (
       isGlobalEthereumObjectEmpty ||
@@ -97,9 +102,9 @@ const Voting: React.FC<Props> = () => {
   }, [loadingElections, electionsData]);
 
   useEffect(() => {
-    if (loadingElections || pastElectionsData == null) return;
+    if (loadingPastElections || pastElectionsData == null) return;
     setPastElections(pastElectionsData.pastElections);
-  }, [loadingElections, pastElectionsData]);
+  }, [loadingPastElections, pastElectionsData]);
 
   useEffect(() => {
     const votingContract = initializeContract(false);
@@ -117,101 +122,110 @@ const Voting: React.FC<Props> = () => {
       votingContract.removeListener("RegisterCandidate", (_e) => {});
       votingContract.removeListener("ArchivePastElection", (_e) => {});
     };
-  }, []);
+  }, [refetchElections, refetchPastElections]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  });
 
   return (
     <Container className="b-voting-container" maxWidth="md">
-      {loadingElections && <CircularProgress className="e-loader" />}
-      {!loadingElections && (
-        <>
-          <Typography variant="h4" className="e-title">
-            Voting dApp
-          </Typography>
-          <Paper elevation={3}>
-            <CardContent>
-              <Typography variant="body2">
-                A dapp for voting where all of the votes and candidate
-                registration happens on chain. Anyone can start an election with
-                a registration period, voting period, and ending time. Anyone
-                can sign up as a candidate during the registration period, and
-                vote once during the voting period. You can the results and know
-                how long is left in the election.
-              </Typography>
-            </CardContent>
-          </Paper>
-          {currentElection != null && (
-            <Election
-              election={currentElection}
-              hasActiveElection={hasActiveElection}
-            />
-          )}
+      <>
+        <Typography variant="h4" className="e-title">
+          Voting dApp
+        </Typography>
+        <Paper elevation={3}>
+          <CardContent>
+            <Typography variant="body2">
+              A dapp for voting where all of the votes and candidate
+              registration happens on chain. Anyone can start an election with a
+              registration period, voting period, and ending time. Anyone can
+              sign up as a candidate during the registration period, and vote
+              once during the voting period. You can the results and know how
+              long is left in the election.
+            </Typography>
+          </CardContent>
+        </Paper>
+        {currentElection != null && (
+          <Election
+            election={currentElection}
+            hasActiveElection={hasActiveElection}
+            isBeforeVotingEnd={isBeforeVotingEnd}
+            isRegistrationOver={isRegistrationOver}
+          />
+        )}
 
-          {!hasActiveElection && (
-            <div className="e-start-election-container">
-              <Typography variant="h6">Start an election</Typography>
-              <Grid container spacing={10} className="e-start-election">
-                <Grid item>
-                  <TextField
-                    id="registration-datetime"
-                    label="Registration End Date/Time"
-                    type="datetime-local"
-                    value={registrationEnd}
-                    onChange={(e) => setRegistrationEnd(e.target.value)}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                </Grid>
-                <Grid item>
-                  <TextField
-                    id="voting-datetime"
-                    label="Voting End Date/Time"
-                    type="datetime-local"
-                    value={votingEnd}
-                    onChange={(e) => setVotingEnd(e.target.value)}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                </Grid>
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => startElection()}
-                  >
-                    Start Election
-                  </Button>
-                </Grid>
+        {!hasActiveElection && (
+          <div className="e-start-election-container">
+            <Typography variant="h6">Start an election</Typography>
+            <Grid container spacing={10} className="e-start-election">
+              <Grid item>
+                <TextField
+                  id="registration-datetime"
+                  label="Registration End Date/Time"
+                  type="datetime-local"
+                  value={registrationEnd}
+                  onChange={(e) => setRegistrationEnd(e.target.value)}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
               </Grid>
-            </div>
-          )}
+              <Grid item>
+                <TextField
+                  id="voting-datetime"
+                  label="Voting End Date/Time"
+                  type="datetime-local"
+                  value={votingEnd}
+                  onChange={(e) => setVotingEnd(e.target.value)}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Grid>
+              <Grid item>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => startElection()}
+                >
+                  Start Election
+                </Button>
+              </Grid>
+            </Grid>
+          </div>
+        )}
 
-          {pastElections.length > 0 && (
-            <div className="e-past-elections">
-              <Typography variant="h6">Past Election Results</Typography>
-              {pastElections.map((x) => (
-                <Accordion key={x.id}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography variant="body2">
-                      Election: {x.electionId} | Winner: {x.winnerName}
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <img
-                      className="e-candidate-blockie"
-                      alt={x.winnerAddress}
-                      src={makeBlockie(x.winnerAddress)}
-                    />
-                    {x.voteCount}
-                    {x.winnerAddress}
-                  </AccordionDetails>
-                </Accordion>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+        {pastElections.length > 0 && (
+          <div className="e-past-elections">
+            <Typography variant="h6">Past Election Results</Typography>
+            {pastElections.map((x) => (
+              <Accordion key={x.id}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="body2">
+                    Election: {x.electionId} | Winner: {x.winnerName}
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <img
+                    className="e-candidate-blockie"
+                    alt={x.winnerAddress}
+                    src={makeBlockie(x.winnerAddress)}
+                  />
+                  {x.voteCount}
+                  {x.winnerAddress}
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </div>
+        )}
+      </>
     </Container>
   );
 };

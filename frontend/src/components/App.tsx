@@ -8,7 +8,7 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import { blue } from "@material-ui/core/colors";
 
 const client = new ApolloClient({
-  uri: "http://localhost:8000/subgraphs/name/0xdavinchee/ethhole-voting-dapp",
+  uri: process.env.REACT_APP_GRAPHQL_URI || "",
   cache: new InMemoryCache(),
 });
 

@@ -59,7 +59,9 @@ code {
 .e-candidate-info {
   display: flex;
 }
-
+.e-winner {
+  border: 1px solid green;
+}
 /* Register Candidate Styles */
 .e-register-form {
   display: flex;

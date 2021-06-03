@@ -7,35 +7,39 @@ import {
   Typography,
 } from "@material-ui/core";
 import { IElection } from "../../interface";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { initializeContract, requestAccount } from "../utils/helpers";
 import Candidate from "./Candidate";
 
 // - an active Election (registration period, voting perio)
 // - an inactive complete Election
 
-const getMs = (seconds: number) => seconds * 1000;
-
 interface IElectionProps {
   hasActiveElection: boolean;
+  isBeforeVotingEnd: boolean;
+  isRegistrationOver: boolean;
   election: IElection;
 }
 
 const Election = (props: IElectionProps) => {
   const [registerError, setRegisterError] = useState(false);
   const [name, setName] = useState("");
-  const [time, setTime] = useState(new Date());
   const formattedRegistrationEndDate = new Date(
     Number(props.election.registrationEndPeriod) * 1000
   );
   const formattedVotingEndDate = new Date(
     Number(props.election.votingEndPeriod) * 1000
   );
-  const isRegistrationOver =
-    time.getTime() > getMs(Number(props.election.registrationEndPeriod));
-  const isVotingAllowed =
-    time.getTime() < getMs(Number(props.election.votingEndPeriod)) &&
-    isRegistrationOver;
+  const isVotingAllowed = props.isBeforeVotingEnd && props.isRegistrationOver;
+
+  const winningCandidateId =
+    props.election.candidates.length === 0
+      ? ""
+      : props.election.candidates
+          .slice()
+          .sort((x, y) =>
+            Number(x.voteCount) > Number(y.voteCount) ? -1 : 1
+          )[0].candidateId;
 
   const totalVotes =
     props.election.candidates.length === 0
@@ -69,16 +73,6 @@ const Election = (props: IElectionProps) => {
     setName(name);
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setTime(new Date());
-    }, 1000);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  });
-
   return (
     <Paper elevation={3} className="b-election-container">
       <CardContent>
@@ -97,7 +91,7 @@ const Election = (props: IElectionProps) => {
               {formattedVotingEndDate.toLocaleTimeString()}
             </div>
           </Grid>
-          {!isRegistrationOver && (
+          {!props.isRegistrationOver && (
             <Grid item xs={12} sm={6}>
               <Typography variant="h6">Register as Candidate</Typography>
               <Typography variant="body2">
@@ -125,10 +119,12 @@ const Election = (props: IElectionProps) => {
               </form>
             </Grid>
           )}
-          {isRegistrationOver && (
+          {props.isRegistrationOver && (
             <Grid item xs={12} sm={6}>
               <Typography variant="h6">
-                The registration period is over.
+                {props.isBeforeVotingEnd
+                  ? "The registration period is over."
+                  : "The election is over."}
               </Typography>
             </Grid>
           )}
@@ -141,15 +137,15 @@ const Election = (props: IElectionProps) => {
           {props.election.candidates.length > 0 &&
             props.election.candidates.map((x) => (
               <Candidate
+                key={x.id}
                 candidate={x}
+                isBeforeVotingEnd={props.isBeforeVotingEnd}
                 isVotingAllowed={isVotingAllowed}
+                isWinner={winningCandidateId === x.candidateId}
                 totalVotes={totalVotes}
               />
             ))}
         </div>
-        {!props.hasActiveElection && (
-          <Typography variant="body1">The election is over.</Typography>
-        )}
       </CardContent>
     </Paper>
   );
