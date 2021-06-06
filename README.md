@@ -3,7 +3,6 @@
   <h3 align="center">Ethhole Voting dApp</h3>
 
   <p align="center">
-        
     Create a dapp for voting where all of the votes and candidate registration happens on chain.
     Allow anyone to start an election with a registration period, voting period, and ending time.
     Allow anyone to sign up as a candidate during the registration period, and allow anyone to
@@ -16,7 +15,6 @@
     - Registration Starts immediately after an election is created.
     - Voting starts immediately following the registration period.
     - A new election can be started once this one has ended.
-
   </p>
 </p>
 
