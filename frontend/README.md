@@ -36,6 +36,7 @@
 
 - [TypeScript](https://typescriptlang.org/)
 - [React](https://reactjs.org/)
+- [MaterialUI](https://material-ui.com/)
 - [Apollo GraphQL](https://apollographql.com)
 
 <!-- GETTING STARTED -->
