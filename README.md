@@ -17,7 +17,7 @@
     <li>Registration Starts immediately after an election is created.</li>
     <li>Voting starts immediately following the registration period.</li>
     <li>A new election can be started once this one has ended.</li>
-  <ul>
+  </ul>
 </p>
 
 <!-- TABLE OF CONTENTS -->
