@@ -86,7 +86,9 @@ Run `npx hardhat node` to start up a local node.
 
 Open up another terminal window and run `npx hardhat deploy --network localhost` to deploy your project to localhost. You can similarly deploy to other networks like so: `npx hardhat deploy --network <NETWORK>`
 
-To set up the graph you need to initialize a graph project, you can follow follow the instructions here: https://medium.com/blockrocket/dapp-development-with-a-local-subgraph-ganache-setup-566a4d4cbb. I currently first verify my contract on rinkeby and then use `graph init` to initialize the project using the deployed project so that the graph initializes the project with the correct ABI and some boilerplate code.
+To set up the graph you need to initialize a graph project, you can follow follow the instructions here: https://medium.com/blockrocket/dapp-development-with-a-local-subgraph-ganache-setup-566a4d4cbb.
+
+I currently first verify my contract on rinkeby and then use `graph init` to initialize the project using the deployed project so that the graph initializes the project with the correct ABI and some boilerplate code.
 
 <!-- LICENSE -->
 
