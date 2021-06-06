@@ -1,21 +1,68 @@
-# ethhole-voting-dapp-frontend
+<br />
+<p align="center">
+  <h3 align="center">Ethhole Voting dApp Frontend</h3>
 
-From: https://ethhole.com/challenge
+  <p align="center">
+    The client side of the voting dApp.
+  </p>
+</p>
 
-Required environment variables in a .env file:
+<!-- TABLE OF CONTENTS -->
+<details open="open">
+  <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+  </ol>
+</details>
 
-- `REACT_APP_GRAPHQL_URI`: the URI obtained from either a local graph deployment or on thegraph
+<!-- ABOUT THE PROJECT -->
+
+## About The Project
+
+### Built With
+
+- [TypeScript](https://typescriptlang.org/)
+- [React](https://reactjs.org/)
+- [Apollo GraphQL](https://apollographql.com)
+
+<!-- GETTING STARTED -->
+
+## Getting Started
+
+### Prerequisites
+
+You need to use a browser which has MetaMask installed to use this app.
+
+### Installation
+
+1. Install NPM packages
+   ```sh
+   npm install
+   ```
+2. Start the project
+   ```sh
+   yarn start
+   ```
+3. Create a `.env` file and add the two following values:
+
+- `REACT_APP_GRAPHQL_URI`: the URI obtained from either a local graph deployment or from your dashboard at https://thegraph.com
 - `REACT_APP_CONTRACT_ADDRESS`: the address of your deployed voting contract
 
-Lessons Learned:
+<!-- USAGE EXAMPLES -->
 
-- How to request accounts and get the signer via metamask. In `helpers.ts`.
-- How to interact with smart contracts on the client: ensuring we have acess to the ABI so we can instantiate the contract w/ the contractAddress. In `helpers.ts`.
-- How to use material-ui and a bunch of cool things you can do with it: create themes to have dark mode, pass a CSS baseline component to give it a baseline of styles.
-- How to use Apollo to connect to a graphql uri (subgraph) and make queries to get data from the blockchain onto the app.
-- How to use event listeners on contracts to listen to emitted events on the client side and the fact that they return data we chose to emit from the contract.
-- Using blockies to get a nice visual representation of an address.
+## Usage
 
-Further Questions/Improvements:
-
-- What is the best way of handling the lag of the event firing and triggering a refetch of the data and the subgraph indexing the data? That is, when we make a change, the event listener is triggered which causes us to refetch, but sometimes the updated data hasn't been indexed by the graph yet, so how can we ensure that this is properly handled?
+After running `yarn start`, the client will start up in your default browser and you can use the app.
