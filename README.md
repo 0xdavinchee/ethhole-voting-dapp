@@ -9,12 +9,14 @@
     vote once during the voting period. Create a front end where voters can see the results and
     know how long is left in the election.
     Assumptions:
-    - One election can be running and started by anyone.
-    - Anyone can sign up as a candidate.
-    - Voters can only vote once.
-    - Registration Starts immediately after an election is created.
-    - Voting starts immediately following the registration period.
-    - A new election can be started once this one has ended.
+    <ul>
+    <li>One election can be running and started by anyone.</li>
+    <li>Anyone can sign up as a candidate.</li>
+    <li>Voters can only vote once.</li>
+    <li>Registration Starts immediately after an election is created.</li>
+    <li>Voting starts immediately following the registration period.</li>
+    <li>A new election can be started once this one has ended.</li>
+    <ul>
   </p>
 </p>
 
