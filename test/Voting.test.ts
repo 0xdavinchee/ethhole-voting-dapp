@@ -74,7 +74,7 @@ describe("Voting Contract Tests", () => {
 
   describe("Start Election", () => {
     it("Should allow starting an election.", async () => {
-      const { Voting } = await setup();
+      const { deployer, Voting } = await setup();
       const registrationEndPeriod = addDaysToDate(new Date(), 1);
       const votingEndPeriod = addDaysToDate(new Date(), 2);
       const startElectionTxn = Voting.startElection(
@@ -84,7 +84,7 @@ describe("Voting Contract Tests", () => {
 
       await expect(startElectionTxn)
         .to.emit(Voting, "StartElection")
-        .withArgs(0, registrationEndPeriod, votingEndPeriod);
+        .withArgs(0, registrationEndPeriod, votingEndPeriod, deployer.address);
       expect(await Voting.registrationEndPeriod()).to.equal(
         registrationEndPeriod
       );
@@ -266,7 +266,7 @@ describe("Voting Contract Tests", () => {
 
   describe("Election Results & New Elections", () => {
     it("Should allow starting a new election once an election has completed.", async () => {
-      const { Voting } = await setup(true, true, true);
+      const { deployer, Voting } = await setup(true, true, true);
       await increaseBlockTime(60 * 60 * 96);
       const registrationEndPeriod = addDaysToDate(new Date(), 10);
       const votingEndPeriod = addDaysToDate(new Date(), 20);
@@ -277,7 +277,7 @@ describe("Voting Contract Tests", () => {
 
       await expect(startNewElectionTxn)
         .to.emit(Voting, "StartElection")
-        .withArgs(1, registrationEndPeriod, votingEndPeriod);
+        .withArgs(1, registrationEndPeriod, votingEndPeriod, deployer.address);
     });
 
     it("Should return the correct final election results.", async () => {

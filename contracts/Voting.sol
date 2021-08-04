@@ -25,7 +25,8 @@ contract Voting {
     event StartElection(
         uint256 indexed electionId,
         uint256 registrationEndPeriod,
-        uint256 votingEndPeriod
+        uint256 votingEndPeriod,
+        address starter
     );
     event ArchivePastElection(
         uint256 indexed electionId,
@@ -78,7 +79,7 @@ contract Voting {
             "There is an active election currently, please wait until it is over."
         );
 
-        // start a new election
+        // delete the previous election data and save the data
         if (registrationEndPeriod != 0 || votingEndPeriod != 0) {
             (string memory name, uint256 voteCount, address winnerAddress) =
                 winningCandidateDetails();
@@ -92,13 +93,15 @@ contract Voting {
             electionId++;
         }
 
+        // start a new election
         registrationEndPeriod = _registrationEndPeriod;
         votingEndPeriod = _votingEndPeriod;
 
         emit StartElection(
             electionId,
             _registrationEndPeriod,
-            _votingEndPeriod
+            _votingEndPeriod,
+            msg.sender
         );
     }
 
