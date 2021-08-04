@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.4;
 
 contract Voting {
     struct Candidate {
@@ -192,7 +192,7 @@ contract Voting {
 
     function destroyContract() public {
         require(msg.sender == owner);
-        selfdestruct(msg.sender);
+        selfdestruct(payable(msg.sender));
     }
 
     /**

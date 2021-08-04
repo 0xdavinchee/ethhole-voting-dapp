@@ -34,7 +34,15 @@ const createTestnetConfig = (
   };
 };
 const config: HardhatUserConfig = {
-  solidity: "0.7.3",
+  solidity: {
+    version: "0.8.4",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 800,
+      },
+    },
+  },
   paths: {
     artifacts: "./frontend/src/artifacts",
   },
